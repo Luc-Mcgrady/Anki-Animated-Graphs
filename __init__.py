@@ -7,6 +7,7 @@ from copy import copy
 from functools import cache
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.animation import FuncAnimation
 
 class IdHashedList(list):
@@ -58,10 +59,11 @@ def getDeck(did):
 
 
     plt.style.use("seaborn")
-    fig, axes = plt.subplots()
-    plt.title(f"{deck['name']} Intervals")
-    bars = plt.bar(range(0,500),[0] * 500)
-
+    fig = Figure()
+    axes = fig.add_subplot()
+    axes.set_title(f"{deck['name']} Intervals")
+    bars = axes.bar(range(0,500),[0] * 500)
+    
     days_per_frame = 5
     frames_per_day = 5
     frames = (len(days) - 1) * frames_per_day
