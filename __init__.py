@@ -7,6 +7,9 @@ from aqt import mw, QMenu
 from typing import Callable
 from copy import copy
 
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
         action = menu.addAction(label)
@@ -24,12 +27,12 @@ def getDeck(did):
 
     day_seconds = 60 * 60 * 24
     cards = [mw.col.card_stats_data(card) for card in card_ids]
-    cards = [card for card in cards if len(card.revlog) > 0 and card.due_date is not None]
+    cards = [card for card in cards if len(card.revlog) > 0 and card.due_date != 0]
 
     earliest = min(cards, key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
     latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
 
-    empty_day = {}
+    empty_day = [0] * 500
 
     days = [empty_day.copy() for _ in range(earliest, latest)] # Create an empty array
     for card in cards:
@@ -40,16 +43,34 @@ def getDeck(did):
         last.time = latest * day_seconds
         ranges = zip(revlog, [*revlog[1:], last])
         
-        print()
+        #print()
         for current, next in ranges:
             #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
             for i in range(current.time // day_seconds, next.time // day_seconds):
                 day = days[i - earliest]
                 index = current.interval // day_seconds
 
-                day_current = day.get(index, 0) + 1
-                day[index] = day_current
+                #day_current = day.get(index, 0) + 1
+                day[index] += 1
 
-    print(f"{days=}")
+    max_bar = 0
+    for day in days:
+        day_max = max(day)
+        max_bar = max_bar if max_bar > day_max else day_max
+
+    fig = plt.figure()
+    bars = plt.bar(range(0,500),[max_bar] * 500)
+    
+    def animate(i):
+        y = days[i]
+
+        for i, b in enumerate(bars):
+            b.set_height(y[i])
+
+    anim = FuncAnimation(fig, animate, len(days), interval=100)
+    anim.save("woo.mp4")
+    plt.show()
+
+    print(f"{days[-1]=}")
 
 action(getDeck, "Create timelapse")
