@@ -1,14 +1,17 @@
 from aqt.gui_hooks import deck_browser_will_show_options_menu
-from anki.decks import DeckManager
-from array import array
-# from anki.exporting import AnkiExporter
 from aqt import mw, QMenu
+from anki.decks import DeckManager
 
 from typing import Callable
 from copy import copy
+from functools import cache
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+
+class IdHashedList(list):
+    def __hash__(self) -> int:
+        return id(self)
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
@@ -19,7 +22,6 @@ def action(on_triggered: Callable, label:str):
 
 
 def getDeck(did):
-    # deck = DeckManager(mw.col).get(did)
     # exporter = AnkiExporter(mw.col)
     # exporter.did = did
     card_ids = mw.col.decks.cids(did, children=True)
@@ -34,7 +36,7 @@ def getDeck(did):
 
     empty_day = [0] * 500
 
-    days = [empty_day.copy() for _ in range(earliest, latest)] # Create an empty array
+    days = [IdHashedList(empty_day.copy()) for _ in range(earliest, latest)] # Create an empty array
     for card in cards:
         # mw.col.get_card(card.id)
 
@@ -58,20 +60,38 @@ def getDeck(did):
     fig, axes = plt.subplots()
     bars = plt.bar(range(0,500),[0] * 500)
 
-    def animate(i):
-        day: list[int] = days[i]
+    frames_per_day = 5
+    frames = len(days) * frames_per_day
 
-        day_max = max(day)
+    def lerp(a: int, b: int, t: float):
+        return a + (b - a) * t
+    
+    @cache
+    def last_day(day: IdHashedList[int]):
         filled_days = [i for i, a in enumerate(day) if a != 0]
+        return filled_days[-1]
+    
+    @cache
+    def memo_max(*args, **kwargs):
+        return max(*args, **kwargs)
 
-        axes.set_xlim(0, filled_days[-1])
-        axes.set_ylim(0, day_max)
+    def animate(frame):
+        day_index = frame // frames_per_day
+        sub_frame = (frame % frames_per_day) / frames_per_day
+
+        day: IdHashedList[int] = days[day_index]
+        next_day = days[day_index+1]
+
+        axes.set_xlim(0, lerp(last_day(day), last_day(next_day), sub_frame))
+        axes.set_ylim(0, lerp(memo_max(day), memo_max(next_day), sub_frame))
 
         for i, b in enumerate(bars):
-            b.set_height(day[i])
+            b.set_height(lerp(day[i], next_day[i], sub_frame))
+        
+        print(f"{frame=}/{frames}")
 
-    anim = FuncAnimation(fig, animate, len(days), interval=100)
-    anim.save("woo.mp4")
+    anim = FuncAnimation(fig, animate, frames, interval=10)
+    anim.save(f"{did}.mp4")
     plt.show()
 
 action(getDeck, "Create timelapse")
