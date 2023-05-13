@@ -53,24 +53,25 @@ def getDeck(did):
                 #day_current = day.get(index, 0) + 1
                 day[index] += 1
 
-    max_bar = 0
-    for day in days:
-        day_max = max(day)
-        max_bar = max_bar if max_bar > day_max else day_max
 
-    fig = plt.figure()
-    bars = plt.bar(range(0,500),[max_bar] * 500)
-    
+    plt.style.use("seaborn")
+    fig, axes = plt.subplots()
+    bars = plt.bar(range(0,500),[0] * 500)
+
     def animate(i):
-        y = days[i]
+        day: list[int] = days[i]
+
+        day_max = max(day)
+        filled_days = [i for i, a in enumerate(day) if a != 0]
+
+        axes.set_xlim(0, filled_days[-1])
+        axes.set_ylim(0, day_max)
 
         for i, b in enumerate(bars):
-            b.set_height(y[i])
+            b.set_height(day[i])
 
     anim = FuncAnimation(fig, animate, len(days), interval=100)
     anim.save("woo.mp4")
     plt.show()
-
-    print(f"{days[-1]=}")
 
 action(getDeck, "Create timelapse")
