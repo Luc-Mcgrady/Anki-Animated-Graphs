@@ -66,6 +66,8 @@ def getDeck(did):
     
     days_per_frame = 5
     frames_per_day = 5
+    shown_percentage = 0.95
+
     frames = (len(days) - 1) * frames_per_day
 
     def lerp(a: int, b: int, t: float):
@@ -74,7 +76,7 @@ def getDeck(did):
     @cache
     def last_day(day: IdHashedList[int]):
         filled_days = [i for i, a in enumerate(day) if a != 0]
-        return filled_days[-1]
+        return filled_days[int(len(filled_days)*shown_percentage)]
     
     @cache
     def memo_max(*args, **kwargs):
