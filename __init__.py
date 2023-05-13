@@ -5,6 +5,7 @@ from array import array
 from aqt import mw, QMenu
 
 from typing import Callable
+from copy import copy
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
@@ -22,37 +23,32 @@ def getDeck(did):
     #for card in card_ids:
 
     day_seconds = 60 * 60 * 24
-    revlogs = [mw.col.card_stats_data(card).revlog for card in card_ids]
-    revlogs = [revlog for revlog in revlogs if len(revlog) > 0]
+    cards = [mw.col.card_stats_data(card) for card in card_ids]
+    cards = [card for card in cards if len(card.revlog) > 0 and card.due_date is not None]
 
-    earliest = min(revlogs, key=lambda a:a[-1].time if len(a) > 0 else 2e50)[-1].time // day_seconds # Gets the earliest day reviewed on 
-    latest = max(revlogs, key=lambda a:a[0].time if len(a) > 0 else -1)[0].time // day_seconds # Gets the latest day reviewed on
+    earliest = min(cards, key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
+    latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
 
-    empty_day = [0, 0, 0, 0]
+    empty_day = {}
 
-    days = [empty_day] * (latest - earliest) # Create an empty array
-    for revlog in revlogs:
-        review = -1 # 1 indexed because we're working backwards
+    days = [empty_day.copy() for _ in range(earliest, latest)] # Create an empty array
+    for card in cards:
+        # mw.col.get_card(card.id)
 
-        day = revlog[review].time // day_seconds
-        print(revlog)
+        revlog = card.revlog[::-1] # flip it so its goes youngest -> oldest
+        last = copy(revlog[0])
+        last.time = latest * day_seconds
+        ranges = zip(revlog, [*revlog[1:], last])
+        
+        print()
+        for current, next in ranges:
+            #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
+            for i in range(current.time // day_seconds, next.time // day_seconds):
+                day = days[i - earliest]
+                index = current.interval // day_seconds
 
-        while day < latest - 1:
-
-            while revlog[review-1].time // day_seconds <= day:
-                #print(f"{review=}, {revlog[review].time // day_seconds=}, {day=}")
-                review -= 1
-            
-            current = revlog[review].review_kind
-            next_time = revlog[review-1].time // day_seconds if review > -len(revlog) + 2 else latest - 1
-            print(f"{current=} {next_time=} {review=}>{-len(revlog)=}")
-
-            while day < next_time:
-                #print(f"{day - earliest=} {len(days)=} {next_time - earliest=}")
-                days[day - earliest][current] += 1
-                day += 1
-
-
+                day_current = day.get(index, 0) + 1
+                day[index] = day_current
 
     print(f"{days=}")
 
