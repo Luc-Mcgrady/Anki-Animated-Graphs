@@ -22,6 +22,7 @@ def action(on_triggered: Callable, label:str):
 
 
 def getDeck(did):
+    deck = DeckManager(mw.col).get(did)
     # exporter = AnkiExporter(mw.col)
     # exporter.did = did
     card_ids = mw.col.decks.cids(did, children=True)
@@ -58,10 +59,12 @@ def getDeck(did):
 
     plt.style.use("seaborn")
     fig, axes = plt.subplots()
+    plt.title(f"{deck['name']} Intervals")
     bars = plt.bar(range(0,500),[0] * 500)
 
+    days_per_frame = 5
     frames_per_day = 5
-    frames = len(days) * frames_per_day
+    frames = (len(days) - 1) * frames_per_day
 
     def lerp(a: int, b: int, t: float):
         return a + (b - a) * t
@@ -90,7 +93,7 @@ def getDeck(did):
         
         print(f"{frame=}/{frames}")
 
-    anim = FuncAnimation(fig, animate, frames, interval=10)
+    anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_frame))
     anim.save(f"{did}.mp4")
     plt.show()
 
