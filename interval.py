@@ -48,7 +48,7 @@ def get_days_intervals(did):
 
 def interval_timelapse(
         did,
-        days_per_frame = 5,
+        days_per_second = 5,
         frames_per_day = 5,
         shown_percentage = 0.95,
     ):
@@ -102,6 +102,6 @@ def interval_timelapse(
         
         print(f"{frame=}/{frames}")
 
-    anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_frame))
+    anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
     anim.save(f"{did}.mp4")
     plt.show()
