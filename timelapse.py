@@ -2,82 +2,17 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.animation import FuncAnimation
 
-from copy import copy
 from functools import cache
 
 from anki.decks import DeckManager
 from aqt import mw
 
-class IdHashedList(list):
-    def __hash__(self) -> int:
-        return id(self)
+from .day_data import get_days, Day, IdHashedList
 
-class Day:
-    new: int
-    intervals: IdHashedList[int]
+def lerp(a: int, b: int, t: float):
+    return a + (b - a) * t
 
-    def __init__(self):
-        self.intervals = IdHashedList([0] * 500)
-        self.new = 0
-
-    @property
-    def learning(self):
-        return self.intervals[0]
-    
-    @property
-    def young(self):
-        return sum(self.intervals[1:21])
-
-    @property
-    def mature(self):
-        return sum(self.intervals[21:])
-    
-    def __iter__(self):
-        return self.intervals
-
-def get_days(did):
-    card_ids = mw.col.decks.cids(did, children=True)
-    #for card in card_ids:
-
-    day_seconds = 60 * 60 * 24
-    cards = [mw.col.card_stats_data(card) for card in card_ids]
-    cards = [card for card in cards]
-
-    earliest = min([card for card in cards if card.first_review != 0], key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
-    latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
-
-    days = [Day() for _ in range(earliest, latest)] # Create an empty array
-    for card in cards:
-        # mw.col.get_card(card.id)
-
-        added = card.added // day_seconds
-        added = added if added > earliest else earliest 
-
-        first_reviewed = card.first_review // day_seconds if card.first_review != 0 else latest
-
-        for i in range(added, first_reviewed):
-            day = days[i - earliest]
-            day.new += 1
-
-        revlog = card.revlog[::-1] # flip it so its goes youngest -> oldest
-        if len(revlog) > 0:
-            last = copy(revlog[0])
-            last.time = latest * day_seconds
-            ranges = zip(revlog, [*revlog[1:], last])
-
-            #print()
-            for current, next in ranges:
-                #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
-                for i in range(current.time // day_seconds, next.time // day_seconds):
-                    day = days[i - earliest]
-                    index = current.interval // day_seconds
-
-                    #day_current = day.get(index, 0) + 1
-                    day.intervals[index] += 1
-    
-    return days
-
-def interval_timelapse(
+def interval_bar(
         did,
         days_per_second = 5,
         frames_per_day = 5,
@@ -94,9 +29,6 @@ def interval_timelapse(
     bars = axes.bar(range(0,500),[0] * 500)
 
     frames = (len(days) - 1) * frames_per_day
-
-    def lerp(a: int, b: int, t: float):
-        return a + (b - a) * t
     
     @cache
     def last_day(day: IdHashedList[int]):
