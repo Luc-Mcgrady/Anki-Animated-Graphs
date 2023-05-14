@@ -12,16 +12,7 @@ class IdHashedList(list):
     def __hash__(self) -> int:
         return id(self)
 
-
-def interval_timelapse(
-        did,
-        days_per_frame = 5,
-        frames_per_day = 5,
-        shown_percentage = 0.95,
-    ):
-    deck = DeckManager(mw.col).get(did)
-    # exporter = AnkiExporter(mw.col)
-    # exporter.did = did
+def get_days_intervals(did):
     card_ids = mw.col.decks.cids(did, children=True)
     #for card in card_ids:
 
@@ -34,7 +25,7 @@ def interval_timelapse(
 
     empty_day = [0] * 500
 
-    days = [IdHashedList(empty_day.copy()) for _ in range(earliest, latest)] # Create an empty array
+    intervals = [IdHashedList(empty_day.copy()) for _ in range(earliest, latest)] # Create an empty array
     for card in cards:
         # mw.col.get_card(card.id)
 
@@ -47,12 +38,23 @@ def interval_timelapse(
         for current, next in ranges:
             #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
             for i in range(current.time // day_seconds, next.time // day_seconds):
-                day = days[i - earliest]
+                day = intervals[i - earliest]
                 index = current.interval // day_seconds
 
                 #day_current = day.get(index, 0) + 1
                 day[index] += 1
+    
+    return intervals
 
+def interval_timelapse(
+        did,
+        days_per_frame = 5,
+        frames_per_day = 5,
+        shown_percentage = 0.95,
+    ):
+    deck = DeckManager(mw.col).get(did)
+
+    intervals = get_days_intervals(did)
 
     plt.style.use("seaborn")
     fig = Figure()
@@ -60,7 +62,7 @@ def interval_timelapse(
     axes.set_title(f"{deck['name']} Intervals")
     bars = axes.bar(range(0,500),[0] * 500)
 
-    frames = (len(days) - 1) * frames_per_day
+    frames = (len(intervals) - 1) * frames_per_day
 
     def lerp(a: int, b: int, t: float):
         return a + (b - a) * t
@@ -78,8 +80,8 @@ def interval_timelapse(
         day_index = frame // frames_per_day
         sub_frame = (frame % frames_per_day) / frames_per_day
 
-        day: IdHashedList[int] = days[day_index]
-        next_day = days[day_index+1]
+        day: IdHashedList[int] = intervals[day_index]
+        next_day = intervals[day_index+1]
 
         axes.set_xlim(0, lerp(last_day(day), last_day(next_day), sub_frame))
         axes.set_ylim(0, lerp(memo_max(day), memo_max(next_day), sub_frame))
