@@ -4,7 +4,6 @@ from matplotlib.animation import FuncAnimation
 
 from copy import copy
 from functools import cache
-from statistics import mean
 
 from anki.decks import DeckManager
 from aqt import mw
@@ -77,6 +76,15 @@ def interval_timelapse(
     def memo_max(*args, **kwargs):
         return max(*args, **kwargs)
 
+    @cache
+    def mean(intervals: IdHashedList[int]):
+        total = 0
+        count = 0
+        for i, c in enumerate(intervals):
+            count += c
+            total += i * c
+        return total / count
+
     def animate(frame):
         day_index = frame // frames_per_day
         sub_frame = (frame % frames_per_day) / frames_per_day
@@ -87,6 +95,7 @@ def interval_timelapse(
         axes.set_xlim(0, lerp(last_day(day), last_day(next_day), sub_frame))
         axes.set_ylim(0, lerp(memo_max(day), memo_max(next_day), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(day)}") 
+        axes.set_xlabel(f"Average interval: {mean(day):.2f} Days") 
 
         for i, b in enumerate(bars):
             b.set_height(lerp(day[i], next_day[i], sub_frame))
