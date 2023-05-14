@@ -96,7 +96,10 @@ def type_pie(did,
             lerp(day.mature, next_day.mature, sub_frame)
         ]
         # print(values)
-        axes.pie(values, None, [f"New: {day.new}", f"Learning: {day.learning}", f"Young: {day.young}", f"Mature: {day.mature}"])
+        axes.pie(values, None, 
+                [f"New: {day.new}"  , f"Learning: {day.learning}",  f"Young: {day.young}",  f"Mature: {day.mature}"], 
+                ["cornflowerblue"   , "orange",                     "greenyellow",          "green"]
+                )
         axes.set_title(f"{deck['name']}")
         axes.set_xlabel(f"Total cards: {sum(day.intervals)}")
 
