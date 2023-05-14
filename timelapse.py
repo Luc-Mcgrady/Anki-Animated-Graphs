@@ -101,7 +101,7 @@ def type_pie(did,
                 ["cornflowerblue"   , "orange",                     "greenyellow",          "green"]
                 )
         axes.set_title(f"{deck['name']}")
-        axes.set_xlabel(f"Total cards: {sum(day.intervals)}")
+        axes.set_xlabel(f"Total cards: {sum(values)}")
 
         print(f"{frame=}/{frames}")
 
