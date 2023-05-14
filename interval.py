@@ -41,37 +41,39 @@ def get_days(did):
 
     day_seconds = 60 * 60 * 24
     cards = [mw.col.card_stats_data(card) for card in card_ids]
-    cards = [card for card in cards if len(card.revlog) > 0 and card.due_date != 0]
+    cards = [card for card in cards]
 
-    earliest = min(cards, key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
+    earliest = min([card for card in cards if card.first_review != 0], key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
     latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
 
     days = [Day() for _ in range(earliest, latest)] # Create an empty array
     for card in cards:
         # mw.col.get_card(card.id)
 
-        revlog = card.revlog[::-1] # flip it so its goes youngest -> oldest
-        last = copy(revlog[0])
-        last.time = latest * day_seconds
-        ranges = zip(revlog, [*revlog[1:], last])
-
         added = card.added // day_seconds
         added = added if added > earliest else earliest 
-        
-        for i in range(added, revlog[0].time // day_seconds):
-            print(f"{i} - {earliest} = {i-earliest}")
+
+        first_reviewed = card.first_review // day_seconds if card.first_review != 0 else latest
+
+        for i in range(added, first_reviewed):
             day = days[i - earliest]
             day.new += 1
 
-        #print()
-        for current, next in ranges:
-            #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
-            for i in range(current.time // day_seconds, next.time // day_seconds):
-                day = days[i - earliest]
-                index = current.interval // day_seconds
+        revlog = card.revlog[::-1] # flip it so its goes youngest -> oldest
+        if len(revlog) > 0:
+            last = copy(revlog[0])
+            last.time = latest * day_seconds
+            ranges = zip(revlog, [*revlog[1:], last])
 
-                #day_current = day.get(index, 0) + 1
-                day.intervals[index] += 1
+            #print()
+            for current, next in ranges:
+                #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
+                for i in range(current.time // day_seconds, next.time // day_seconds):
+                    day = days[i - earliest]
+                    index = current.interval // day_seconds
+
+                    #day_current = day.get(index, 0) + 1
+                    day.intervals[index] += 1
     
     return days
 
@@ -132,5 +134,29 @@ def interval_timelapse(
         print(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"{did}.mp4")
+    anim.save(f"bar_{did}.mp4")
     plt.show()
+
+def type_pie(did):
+    deck = DeckManager(mw.col).get(did)
+    days = get_days(did)
+    frames = len(days)
+
+    fig = Figure()
+    axes = fig.add_subplot()
+
+    # day.new, day.learning, day.young, day.mature
+    def animate(frame):
+        day: Day = days[frame]
+        
+        axes.clear()
+        values = [day.new, day.learning, day.young, day.mature]
+        # print(values)
+        axes.pie(values, None, [f"New: {day.new}", f"Learning: {day.learning}", f"Young: {day.young}", f"Mature: {day.mature}"])
+        axes.set_title(f"{deck['name']}")
+        axes.set_xlabel(f"Total cards: {sum(day.intervals)}")
+
+        print(f"{frame=}/{frames}")
+
+    anim = FuncAnimation(fig, animate, frames, interval=5)
+    anim.save(f"pie_{did}.mp4")
