@@ -69,20 +69,32 @@ def interval_bar(
     anim.save(f"bar_{did}.mp4")
     plt.show()
 
-def type_pie(did):
+def type_pie(did,
+            days_per_second = 5,
+            frames_per_day = 5,
+            ):
     deck = DeckManager(mw.col).get(did)
     days = get_days(did)
-    frames = len(days)
+    frames = (len(days) - 1) * frames_per_day
 
     fig = Figure()
     axes = fig.add_subplot()
 
     # day.new, day.learning, day.young, day.mature
     def animate(frame):
-        day: Day = days[frame]
+        day_index = frame // frames_per_day
+        sub_frame = (frame % frames_per_day) / frames_per_day
+
+        day: Day = days[day_index]
+        next_day = days[day_index + 1]
         
         axes.clear()
-        values = [day.new, day.learning, day.young, day.mature]
+        values = [
+            lerp(day.new, next_day.new, sub_frame), 
+            lerp(day.learning, next_day.learning, sub_frame),
+            lerp(day.young, next_day.young, sub_frame),
+            lerp(day.mature, next_day.mature, sub_frame)
+        ]
         # print(values)
         axes.pie(values, None, [f"New: {day.new}", f"Learning: {day.learning}", f"Young: {day.young}", f"Mature: {day.mature}"])
         axes.set_title(f"{deck['name']}")
@@ -90,5 +102,5 @@ def type_pie(did):
 
         print(f"{frame=}/{frames}")
 
-    anim = FuncAnimation(fig, animate, frames, interval=5)
+    anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
     anim.save(f"pie_{did}.mp4")
