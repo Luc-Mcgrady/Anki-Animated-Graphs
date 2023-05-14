@@ -1,5 +1,6 @@
 from aqt import mw
 from copy import copy
+from datetime import datetime
 
 class IdHashedList(list):
     def __hash__(self) -> int:
@@ -8,10 +9,12 @@ class IdHashedList(list):
 class Day:
     new: int
     intervals: IdHashedList[int]
+    timestamp: int
 
-    def __init__(self):
+    def __init__(self, timestamp):
         self.intervals = IdHashedList([0] * 500)
         self.new = 0
+        self.timestamp = timestamp
 
     @property
     def learning(self):
@@ -25,6 +28,10 @@ class Day:
     def mature(self):
         return sum(self.intervals[21:])
     
+    @property
+    def date(self):
+        return datetime.fromtimestamp(self.timestamp).date()
+
     def __iter__(self):
         return self.intervals
 
@@ -39,7 +46,7 @@ def get_days(did):
     earliest = min([card for card in cards if card.first_review != 0], key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
     latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
 
-    days = [Day() for _ in range(earliest, latest)] # Create an empty array
+    days = [Day(i * day_seconds) for i in range(earliest, latest)] # Create an empty array
     for card in cards:
         # mw.col.get_card(card.id)
 

@@ -52,13 +52,14 @@ def interval_bar(
         day_index = frame // frames_per_day
         sub_frame = (frame % frames_per_day) / frames_per_day
 
-        intervals: IdHashedList[int] = days[day_index].intervals
+        day: Day = days[day_index]
+        intervals = day.intervals
         next_intervals = days[day_index+1].intervals
 
         axes.set_xlim(0, lerp(last_day(intervals), last_day(next_intervals), sub_frame))
         axes.set_ylim(0, lerp(memo_max(intervals), memo_max(next_intervals), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(intervals)}") 
-        axes.set_xlabel(f"Average interval: {mean(intervals):.2f} Days") 
+        axes.set_xlabel(f"Average interval: {mean(intervals):.2f}, {day.date}") 
 
         for i, b in enumerate(bars):
             b.set_height(lerp(intervals[i], next_intervals[i], sub_frame))
@@ -101,7 +102,7 @@ def type_pie(did,
                 ["cornflowerblue"   , "orange",                     "greenyellow",          "green"]
                 )
         axes.set_title(f"{deck['name']}")
-        axes.set_xlabel(f"Total cards: {sum(values)}")
+        axes.set_xlabel(f"Total cards: {sum(values):.0f}, {day.date}")
 
         print(f"{frame=}/{frames}")
 
