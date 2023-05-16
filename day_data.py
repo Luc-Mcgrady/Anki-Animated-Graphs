@@ -37,11 +37,11 @@ class Day:
 
 def get_days(did):
     card_ids = mw.col.decks.cids(did, children=True)
-    #for card in card_ids:
+    suspended = mw.col.find_cards(f"is:suspended")
+    card_ids = [id for id in card_ids if id not in suspended]
 
     day_seconds = 60 * 60 * 24
     cards = [mw.col.card_stats_data(card) for card in card_ids]
-    cards = [card for card in cards]
 
     earliest = min([card for card in cards if card.first_review != 0], key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
     latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
