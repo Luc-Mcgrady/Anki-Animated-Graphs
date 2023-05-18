@@ -25,7 +25,6 @@ def interval_bar(
     plt.style.use("seaborn")
     fig = Figure()
     axes = fig.add_subplot()
-    axes.set_title(f"{deck['name']} Intervals")
     bars = axes.bar(range(0,500),[0] * 500)
 
     frames = (len(days) - 1) * frames_per_day
@@ -40,13 +39,17 @@ def interval_bar(
         return max(*args, **kwargs)
 
     @cache
-    def mean(intervals: IdHashedList[int]):
+    def average(intervals: IdHashedList[int]):
         total = 0
         count = 0
         for i, c in enumerate(intervals):
             count += c
             total += i * c
         return total / count
+
+    @cache
+    def burden(intervals: IdHashedList[int]):
+        return sum(a/i for i, a in enumerate(intervals) if i > 0)
 
     def animate(frame):
         day_index = frame // frames_per_day
@@ -56,10 +59,11 @@ def interval_bar(
         intervals = day.intervals
         next_intervals = days[day_index+1].intervals
 
+        axes.set_title(f"{deck['name']} Intervals {day.date}")
         axes.set_xlim(0, lerp(last_day(intervals), last_day(next_intervals), sub_frame))
         axes.set_ylim(0, lerp(memo_max(intervals), memo_max(next_intervals), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(intervals)}") 
-        axes.set_xlabel(f"Average interval: {mean(intervals):.2f}, {day.date}") 
+        axes.set_xlabel(f"Average interval: {average(intervals):.2f}, Burden: {burden(intervals):.2f}cards/day") 
 
         for i, b in enumerate(bars):
             b.set_height(lerp(intervals[i], next_intervals[i], sub_frame))
