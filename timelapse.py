@@ -30,9 +30,14 @@ def interval_bar(
     frames = (len(days) - 1) * frames_per_day
     
     @cache
-    def last_day(day: IdHashedList[int]):
-        filled_days = [i for i, a in enumerate(day) if a != 0]
-        return filled_days[int(len(filled_days)*shown_percentage)]
+    def last_day(days: IdHashedList[int]):
+        target = sum(days) * shown_percentage
+        current = 0
+        for i, day in enumerate(days):
+            current += day
+            if current >= target:
+                return i
+        assert False # Should not exit this for loop
     
     @cache
     def memo_max(*args, **kwargs):
