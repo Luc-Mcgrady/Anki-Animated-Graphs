@@ -60,7 +60,7 @@ def interval_bar(
         next_intervals = days[day_index+1].intervals
 
         axes.set_title(f"{deck['name']} Intervals {day.date}")
-        axes.set_xlim(0, lerp(last_day(intervals), last_day(next_intervals), sub_frame))
+        axes.set_xlim(-0.5, lerp(last_day(intervals), last_day(next_intervals), sub_frame) + 0.5)
         axes.set_ylim(0, lerp(memo_max(intervals), memo_max(next_intervals), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(intervals)}") 
         axes.set_xlabel(f"Average interval: {average(intervals):.2f}, Burden: {burden(intervals):.2f}cards/day") 
