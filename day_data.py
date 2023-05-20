@@ -69,6 +69,7 @@ def get_days(did):
         if len(revlog) > 0:
             last = copy(revlog[-1])
             last.time = latest * day_seconds
+            #last.interval = revlog[-1].interval // revlog[-2].interval # Try and keep the last interval the same 
 
             ranges = zip(revlog, [*revlog[1:], last])
 
@@ -79,12 +80,13 @@ def get_days(did):
                     day = days[i - earliest]
                     # For some reason this interval doesn't match up with the stats at the end but it doesn't seem to be a bug
                     interval = current.interval // day_seconds
-                    real_ease_index = ((10 * current.interval) // next.interval)
-                    #print(f"{real_ease_index=} {current.interval=} {next.interval=} {current.button_chosen}")
+                    if next.interval > 0:
+                        real_ease_index = ((10 * current.interval) // next.interval)
+                        #print(f"{real_ease_index=} {current.interval=} {next.interval=} {current.button_chosen}")
 
-                    #day_current = day.get(index, 0) + 1
-                    day.intervals[interval] += 1
-                    if real_ease_index < MAX_EASE:
-                        day.real_ease[real_ease_index] += 1
-    
+                        #day_current = day.get(index, 0) + 1
+                        day.intervals[interval] += 1
+                        if real_ease_index < MAX_EASE:
+                            day.real_ease[real_ease_index] += 1
+        
     return days
