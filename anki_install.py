@@ -4,11 +4,11 @@ import sys
 import os
 import platform
 
-pip_process = QProcess()
-pip_process.setProcessChannelMode(QProcess.ProcessChannelMode.ForwardedChannels)
+_pip_process = QProcess()
+_pip_process.setProcessChannelMode(QProcess.ProcessChannelMode.ForwardedChannels)
 
 def install(package_name: str):
-    global pip_process
+    global _pip_process
     confirmed = askUser(
 f"""This will install {package_name} into anki
 
@@ -29,9 +29,9 @@ title="Install package?")
             anki_lib_path = os.path.join(anki_lib_path, "lib") # .../anki/lib
 
             # https://stackoverflow.com/a/2916320
-            pip_process.start("pip", ["install", f'--target={anki_lib_path}', package_name])
+            _pip_process.start("pip", ["install", f'--target={anki_lib_path}', package_name])
         elif platform.system() == "Linux": # For linux
-            pip_process.start(sys.executable, ["-m", "pip", "install", package_name])
+            _pip_process.start(sys.executable, ["-m", "pip", "install", package_name])
         else:
             # I dont think anki itself supports any different operating systems so this should never be reached
             showCritical(f"Not supported for operating system: '{platform.system()}'") 
@@ -39,12 +39,12 @@ title="Install package?")
         tooltip("Installing optimizer")
         def finished(exitCode,  exitStatus):
             if exitCode == 0:
-                showInfo("Optimizer installed successfully, restart for it to take effect")
+                showInfo(f"Package \"{package_name}\" installed successfully, restart for it to take effect")
             else:
                 showCritical(
-f"""Optimizer wasn't installed. For more information, run anki in console mode. (on windows anki-console.bat)
+f"""Package \"{package_name}\" wasn't installed. For more information, run anki in console mode. (on windows anki-console.bat)
 
 Error code: '{exitCode}', Error status '{exitStatus}'
 """
 )
-        pip_process.finished.connect(finished)
+        _pip_process.finished.connect(finished)
