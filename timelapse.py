@@ -7,16 +7,20 @@ from functools import cache
 from anki.decks import DeckManager
 from aqt import mw
 
-from .day_data import get_days, Day, IdHashedList
+from .day_data import get_days, Day, IdHashedList, MAX_EASE, MAX_INTERVAL
 
 def lerp(a: int, b: int, t: float):
     return a + (b - a) * t
 
-def interval_bar(
+def bar(
         did,
         days_per_second = 5,
         frames_per_day = 5,
         shown_percentage = 0.95,
+        bar_type = "intervals",
+        bar_count = MAX_INTERVAL,
+        x_scale = 1,
+        get_data = lambda day: day.intervals
     ):
     deck = DeckManager(mw.col).get(did)
 
@@ -25,7 +29,7 @@ def interval_bar(
     plt.style.use("seaborn")
     fig = Figure()
     axes = fig.add_subplot()
-    bars = axes.bar(range(0,500),[0] * 500)
+    bars = axes.bar([a*x_scale for a in range(0,bar_count)],[0] * bar_count)
 
     frames = (len(days) - 1) * frames_per_day
     
@@ -61,23 +65,34 @@ def interval_bar(
         sub_frame = (frame % frames_per_day) / frames_per_day
 
         day: Day = days[day_index]
-        intervals = day.intervals
-        next_intervals = days[day_index+1].intervals
+        data = get_data(day)
+        next_data = get_data(days[day_index+1])
 
-        axes.set_title(f"{deck['name']} Intervals {day.date}")
-        axes.set_xlim(-0.5, lerp(last_day(intervals), last_day(next_intervals), sub_frame) + 0.5)
-        axes.set_ylim(0, lerp(memo_max(intervals), memo_max(next_intervals), sub_frame))
-        axes.set_ylabel(f"Total cards: {sum(intervals)}") 
-        axes.set_xlabel(f"Average interval: {average(intervals):.2f}, Burden: {burden(intervals):.2f}cards/day") 
+        axes.set_title(f"{deck['name']} {bar_type.title()} {day.date}")
+        axes.set_xlim(-0.5, lerp(last_day(data), last_day(next_data), sub_frame) + 0.5)
+        axes.set_ylim(0, lerp(memo_max(data), memo_max(next_data), sub_frame))
+        axes.set_ylabel(f"Total cards: {sum(data)}") 
+        axes.set_xlabel(f"Average {bar_type}: {x_scale*average(data):.2f}, Burden: {burden(data):.2f}cards/day") 
 
         for i, b in enumerate(bars):
-            b.set_height(lerp(intervals[i], next_intervals[i], sub_frame))
+            b.set_height(lerp(data[i], next_data[i], sub_frame))
         
         print(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"bar_{did}.mp4")
+    anim.save(f"{bar_type}_{did}.mp4")
     plt.show()
+
+def bar_interval(did):
+    bar(did) # If you want to change the settings do it here
+
+def bar_ease(did):
+    bar(did,
+        bar_type="ease",
+        shown_percentage=0.99,
+        bar_count=MAX_EASE,
+        get_data=lambda day: day.real_ease
+    )
 
 def type_pie(did,
             days_per_second = 5,

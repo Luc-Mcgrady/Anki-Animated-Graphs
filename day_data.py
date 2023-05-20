@@ -6,13 +6,19 @@ class IdHashedList(list):
     def __hash__(self) -> int:
         return id(self)
 
+MAX_INTERVAL = 500
+MAX_EASE = 30
+
 class Day:
     new: int
     intervals: IdHashedList[int]
+    real_ease: IdHashedList[int]
     timestamp: int
 
     def __init__(self, timestamp):
-        self.intervals = IdHashedList([0] * 500)
+        self.intervals = IdHashedList([0] * MAX_INTERVAL)
+        self.real_ease = IdHashedList([0] * MAX_EASE)
+
         self.new = 0
         self.timestamp = timestamp
 
@@ -61,8 +67,9 @@ def get_days(did):
 
         revlog = card.revlog[::-1] # flip it so its goes youngest -> oldest
         if len(revlog) > 0:
-            last = copy(revlog[0])
+            last = copy(revlog[-1])
             last.time = latest * day_seconds
+
             ranges = zip(revlog, [*revlog[1:], last])
 
             #print()
@@ -70,9 +77,14 @@ def get_days(did):
                 #print(f"{current.time // day_seconds=}, {next.time // day_seconds=}")
                 for i in range(current.time // day_seconds, next.time // day_seconds):
                     day = days[i - earliest]
-                    index = current.interval // day_seconds
+                    # For some reason this interval doesn't match up with the stats at the end but it doesn't seem to be a bug
+                    interval = current.interval // day_seconds
+                    real_ease_index = ((10 * current.interval) // next.interval)
+                    #print(f"{real_ease_index=} {current.interval=} {next.interval=} {current.button_chosen}")
 
                     #day_current = day.get(index, 0) + 1
-                    day.intervals[index] += 1
+                    day.intervals[interval] += 1
+                    if real_ease_index < MAX_EASE:
+                        day.real_ease[real_ease_index] += 1
     
     return days

@@ -3,7 +3,7 @@ from aqt import QMenu
 
 from typing import Callable
 
-from .timelapse import interval_bar, type_pie
+from .timelapse import bar_interval, bar_ease, type_pie
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
@@ -12,5 +12,6 @@ def action(on_triggered: Callable, label:str):
         
     deck_browser_will_show_options_menu.append(wrapper)
 
-action(interval_bar, "Create timelapse")
+action(bar_interval, "Create interval bars")
+action(bar_ease, "Create ease bars")
 action(type_pie, "Create pie")
