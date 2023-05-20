@@ -1,6 +1,11 @@
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.animation import FuncAnimation
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
+    from matplotlib.animation import FuncAnimation
+except ImportError:
+    from .anki_install import dependencies
+
+    dependencies()
 
 from functools import cache
 

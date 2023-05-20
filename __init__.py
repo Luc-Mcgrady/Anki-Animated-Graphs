@@ -4,7 +4,7 @@ from aqt import QMenu, mw
 from typing import Callable
 
 from .timelapse import bar_interval, bar_ease, type_pie
-from .anki_install import install
+from .anki_install import dependencies
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
@@ -18,4 +18,4 @@ action(bar_ease, "Create ease bars")
 action(type_pie, "Create pie")
 
 install_action = mw.form.menuTools.addAction("Install Matplotlib")
-install_action.triggered.connect(lambda:install("matplotlib"))
+install_action.triggered.connect(dependencies)

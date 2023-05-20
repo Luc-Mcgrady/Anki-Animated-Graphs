@@ -48,3 +48,6 @@ Error code: '{exitCode}', Error status '{exitStatus}'
 """
 )
         _pip_process.finished.connect(finished)
+
+def dependencies():
+    install("matplotlib")
