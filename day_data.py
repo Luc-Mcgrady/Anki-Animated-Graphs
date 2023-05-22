@@ -13,11 +13,14 @@ class Day:
     new: int
     intervals: IdHashedList[int]
     real_ease: IdHashedList[int]
+    ratings: IdHashedList[int]
+
     timestamp: int
 
     def __init__(self, timestamp):
         self.intervals = IdHashedList([0] * MAX_INTERVAL)
         self.real_ease = IdHashedList([0] * MAX_EASE)
+        self.ratings = IdHashedList([0, 0, 0, 0])
 
         self.new = 0
         self.timestamp = timestamp
@@ -51,6 +54,7 @@ def get_days(did):
 
     earliest = min([card for card in cards if card.first_review != 0], key=lambda a:a.first_review).first_review // day_seconds # Gets the earliest day reviewed on 
     latest = max(cards, key=lambda a:a.latest_review).latest_review // day_seconds # Gets the latest day reviewed on
+    latest += 1 # I dont know why we need this
 
     days = [Day(i * day_seconds) for i in range(earliest, latest)] # Create an empty array
     for card in cards:
@@ -87,5 +91,8 @@ def get_days(did):
 
                         if 1 < real_ease_index < MAX_EASE:
                             day.real_ease[real_ease_index] += 1
+            
+            for review in revlog:
+                days[(review.time // day_seconds) - earliest].ratings[review.button_chosen - 1] += 1
         
     return days

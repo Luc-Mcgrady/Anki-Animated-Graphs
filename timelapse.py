@@ -22,7 +22,7 @@ def bar(
         days_per_second = 5,
         frames_per_day = 5,
         shown_percentage = 0.95,
-        bar_type = "intervals",
+        title = "intervals",
         bar_count = MAX_INTERVAL,
         x_scale = 1,
         get_data = lambda day: day.intervals,
@@ -75,11 +75,11 @@ def bar(
         data = get_data(day)
         next_data = get_data(days[day_index+1])
 
-        axes.set_title(f"{deck['name']} {bar_type.title()} {day.date}")
+        axes.set_title(f"{deck['name']} {title.title()} {day.date}")
         axes.set_xlim(-0.5, lerp(last_day(data), last_day(next_data), sub_frame) + 0.5)
         axes.set_ylim(0, lerp(memo_max(data), memo_max(next_data), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(data)}") 
-        axes.set_xlabel(f"Average {bar_type}: {x_scale*average(data):.2f}, Burden: {burden(data):.2f}cards/day") 
+        axes.set_xlabel(f"Average {title}: {x_scale*average(data):.2f}, Burden: {burden(data):.2f}cards/day") 
 
         for bar, day, next_day in zip(bars, data, next_data):
             bar.set_height(lerp(day, next_day, sub_frame))
@@ -87,7 +87,7 @@ def bar(
         print(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"{bar_type}_{did}.mp4")
+    anim.save(f"{title}_{did}.mp4")
     plt.show()
 
 def bar_interval(did):
@@ -95,7 +95,7 @@ def bar_interval(did):
 
 def bar_ease(did):
     bar(did,
-        bar_type="ease", # Config
+        title="ease", # Config
         shown_percentage=0.99,
         bar_count=MAX_EASE,
 
@@ -103,10 +103,20 @@ def bar_ease(did):
         get_data=lambda day: day.real_ease
     )
 
-def type_pie(did,
-            days_per_second = 5,
-            frames_per_day = 5,
-            ):
+def pie(did,
+        datums : list[any] = [
+            lambda day: day.new,
+            lambda day: day.learning,
+            lambda day: day.young,
+            lambda day: day.mature
+        ],
+        labels = [f"New: %d", f"Learning: %d",  f"Young: %d",  f"Mature: %d"],
+        colours = ["cornflowerblue", "orange", "greenyellow", "green"],
+        title = "card types",
+
+        days_per_second = 5,
+        frames_per_day = 5,
+    ):
     deck = DeckManager(mw.col).get(did)
     days = get_days(did)
     frames = (len(days) - 1) * frames_per_day
@@ -122,22 +132,32 @@ def type_pie(did,
         day: Day = days[day_index]
         next_day = days[day_index + 1]
         
+        print(day.ratings[0])
+
         axes.clear()
-        values = [
-            lerp(day.new, next_day.new, sub_frame), 
-            lerp(day.learning, next_day.learning, sub_frame),
-            lerp(day.young, next_day.young, sub_frame),
-            lerp(day.mature, next_day.mature, sub_frame)
-        ]
-        # print(values)
+        values = [lerp(datum(day), datum(next_day), sub_frame) for datum in datums]
+        print(values)
+        print(datums[0](day))
+        print(datums[1](day))
         axes.pie(values, None, 
-                [f"New: {day.new}"  , f"Learning: {day.learning}",  f"Young: {day.young}",  f"Mature: {day.mature}"], 
-                ["cornflowerblue"   , "orange",                     "greenyellow",          "green"]
+                [label % datum(day) for label, datum in zip(labels, datums)],
+                colours
                 )
-        axes.set_title(f"{deck['name']}")
+        axes.set_title(f"{deck['name']} {title.title()}")
         axes.set_xlabel(f"Total cards: {sum(values):.0f}, {day.date}")
 
         print(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"pie_{did}.mp4")
+    anim.save(f"{title}_{did}.mp4")
+
+def pie_card_types(did):
+    pie(did)
+
+def pie_ratings(did): # This info is very easy to access in anki but I think 4 graphs look nicer than 3
+    pie(did, [
+            lambda day: day.ratings[0],
+            lambda day: day.ratings[1],
+            lambda day: day.ratings[2],
+            lambda day: day.ratings[3],
+        ], ["Again %d", "Hard %d", "Good %d", "Easy %d"], ["red", "orange", "greenyellow", "green"], "ratings")
