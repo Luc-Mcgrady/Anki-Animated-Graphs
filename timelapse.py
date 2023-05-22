@@ -131,14 +131,10 @@ def pie(did,
 
         day: Day = days[day_index]
         next_day = days[day_index + 1]
-        
-        print(day.ratings[0])
 
         axes.clear()
         values = [lerp(datum(day), datum(next_day), sub_frame) for datum in datums]
-        print(values)
-        print(datums[0](day))
-        print(datums[1](day))
+        # print(values)
         axes.pie(values, None, 
                 [label % datum(day) for label, datum in zip(labels, datums)],
                 colours
