@@ -113,6 +113,7 @@ def pie(did,
         labels = [f"New: %d", f"Learning: %d",  f"Young: %d",  f"Mature: %d"],
         colours = ["cornflowerblue", "orange", "greenyellow", "green"],
         title = "card types",
+        label = "cards",
 
         days_per_second = 5,
         frames_per_day = 5,
@@ -140,7 +141,7 @@ def pie(did,
                 colours
                 )
         axes.set_title(f"{deck['name']} {title.title()}")
-        axes.set_xlabel(f"Total cards: {sum(values):.0f}, {day.date}")
+        axes.set_xlabel(f"Total {label}: {sum(values):.0f}, {day.date}")
 
         print(f"{frame=}/{frames}")
 
@@ -156,4 +157,4 @@ def pie_ratings(did): # This info is very easy to access in anki but I think 4 g
             lambda day: day.ratings[1],
             lambda day: day.ratings[2],
             lambda day: day.ratings[3],
-        ], ["Again %d", "Hard %d", "Good %d", "Easy %d"], ["red", "orange", "greenyellow", "green"], "ratings")
+        ], ["Again %d", "Hard %d", "Good %d", "Easy %d"], ["red", "orange", "greenyellow", "green"], "ratings", "reviews")
