@@ -69,7 +69,6 @@ def get_days(did):
         if len(revlog) > 0:
             last = copy(revlog[-1])
             last.time = latest * day_seconds
-            #last.interval = revlog[-1].interval // revlog[-2].interval # Try and keep the last interval the same 
 
             ranges = zip(revlog, [*revlog[1:], last])
 
@@ -82,7 +81,7 @@ def get_days(did):
                     interval = current.interval // day_seconds
                     day.intervals[interval] += 1
 
-                    if current.interval > 0:
+                    if current.interval > 0 and next is not last:
                         real_ease_index = (10 * next.interval) // current.interval # As a 10*%
                         # print(f"{real_ease_index=} {current.interval=} {next.interval=} {current.button_chosen}")
 
