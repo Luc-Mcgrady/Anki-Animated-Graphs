@@ -1,6 +1,6 @@
 # Anki Animated Graphs
 
-Video (Click the image)
+[Video](http://www.youtube.com/watch?v=WDyhZYgIQk8)
 
 [![Anki Animated Graphs](http://img.youtube.com/vi/WDyhZYgIQk8/0.jpg)](http://www.youtube.com/watch?v=WDyhZYgIQk8 "Anki Animated Graphs")
 
