@@ -25,7 +25,8 @@ def bar(
         bar_type = "intervals",
         bar_count = MAX_INTERVAL,
         x_scale = 1,
-        get_data = lambda day: day.intervals
+        get_data = lambda day: day.intervals,
+        show_burden = False
     ):
     deck = DeckManager(mw.col).get(did)
 
@@ -34,7 +35,8 @@ def bar(
     plt.style.use("seaborn")
     fig = Figure()
     axes = fig.add_subplot()
-    bars = axes.bar([a*x_scale for a in range(0,bar_count)],[0] * bar_count)
+    bars = axes.bar(range(0,bar_count),[0] * bar_count)
+    # axes.set_xticklabels([i*x_scale for i in range(bar_count)])
 
     frames = (len(days) - 1) * frames_per_day
     
@@ -79,8 +81,8 @@ def bar(
         axes.set_ylabel(f"Total cards: {sum(data)}") 
         axes.set_xlabel(f"Average {bar_type}: {x_scale*average(data):.2f}, Burden: {burden(data):.2f}cards/day") 
 
-        for i, b in enumerate(bars):
-            b.set_height(lerp(data[i], next_data[i], sub_frame))
+        for bar, day, next_day in zip(bars, data, next_data):
+            bar.set_height(lerp(day, next_day, sub_frame))
         
         print(f"{frame=}/{frames}")
 
@@ -93,9 +95,11 @@ def bar_interval(did):
 
 def bar_ease(did):
     bar(did,
-        bar_type="ease",
+        bar_type="ease", # Config
         shown_percentage=0.99,
         bar_count=MAX_EASE,
+
+        x_scale=10, # Just needed for the bar
         get_data=lambda day: day.real_ease
     )
 
