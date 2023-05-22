@@ -61,7 +61,7 @@ def bar(
         for i, c in enumerate(intervals):
             count += c
             total += i * c
-        return total / count
+        return total / count or 1
 
     @cache
     def burden(intervals: IdHashedList[int]):
@@ -135,6 +135,8 @@ def pie(did,
 
         axes.clear()
         values = [lerp(datum(day), datum(next_day), sub_frame) for datum in datums]
+        values = [v if v > 0 else 0.1 for v in values] # Make sure no zero errors
+
         # print(values)
         axes.pie(values, None, 
                 [label % datum(day) for label, datum in zip(labels, datums)],
