@@ -2,7 +2,7 @@ from aqt.gui_hooks import deck_browser_will_show_options_menu
 from aqt import QMenu, mw, QThreadPool, QRunnable, QObject, pyqtSignal
 from aqt.utils import tooltip
 
-from typing import Callable
+from typing import Callable, Any
 
 from .timelapse import bar_interval, bar_ease, pie_card_types, pie_ratings
 from .anki_install import dependencies
@@ -10,7 +10,7 @@ from time import time
 
 class Worker(QRunnable):
     class Hooks(QObject):
-        finished = pyqtSignal()
+        finished = pyqtSignal(Any)
         progress = pyqtSignal(str)
 
     def __init__(self) -> None:
