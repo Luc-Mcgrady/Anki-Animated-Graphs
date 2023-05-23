@@ -12,6 +12,8 @@ from .anki_install import dependencies
 from time import time
 
 class Worker(QRunnable):
+    started = False
+
     class Hooks(QObject):
         finished = pyqtSignal(object)
         progress = pyqtSignal(str)
@@ -22,8 +24,10 @@ class Worker(QRunnable):
         self.hooks.progress.connect(self.log)
 
     def run(self) -> None:
-        result = self.func()
-        self.hooks.finished.emit(result)
+        if not self.started:
+            self.started = True
+            result = self.func()
+            self.hooks.finished.emit(result)
 
     hooks = Hooks()
 
@@ -43,13 +47,16 @@ _worker = None
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
-        global _worker
+        def on_click():
+            global _worker
+
+            _worker = Worker()
+            _worker.hooks.finished.connect(lambda: showInfo(f"Generated successfully, Can be found at {SAVE_PATH}"))
+            _worker.thread(lambda progress:on_triggered(did, progress))
 
         action = menu.addAction(label)
-        
-        _worker = Worker()
-        _worker.hooks.finished.connect(lambda: showInfo(f"Generated successfully, Can be found at {SAVE_PATH}"))
-        action.triggered.connect(lambda: _worker.thread(lambda progress:on_triggered(did, progress)))
+
+        action.triggered.connect(on_click)
         
     deck_browser_will_show_options_menu.append(wrapper)
 
