@@ -19,10 +19,11 @@ from .day_data import get_days, Day, IdHashedList, MAX_EASE, MAX_INTERVAL
 def _lerp(a: int, b: int, t: float):
     return a + (b - a) * t
 
+SAVE_PATH = expanduser(f"~/animated anki graphs")
+
 def _save(anim : FuncAnimation, name: str):
-    dir_path = expanduser(f"~/animated anki graphs")
-    file_path = f"{dir_path}/{name}"
-    makedirs(dir_path, exist_ok=True)
+    file_path = f"{SAVE_PATH}/{name}"
+    makedirs(SAVE_PATH, exist_ok=True)
     anim.save(file_path)
 
 def bar(

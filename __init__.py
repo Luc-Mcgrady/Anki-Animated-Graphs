@@ -1,16 +1,16 @@
 from aqt.gui_hooks import deck_browser_will_show_options_menu
 from aqt import QMenu, mw, QThreadPool, QRunnable, QObject, pyqtSignal
-from aqt.utils import tooltip
+from aqt.utils import tooltip, showInfo
 
-from typing import Callable, Any
+from typing import Callable
 
-from .timelapse import bar_interval, bar_ease, pie_card_types, pie_ratings
+from .timelapse import bar_interval, bar_ease, pie_card_types, pie_ratings, SAVE_PATH
 from .anki_install import dependencies
 from time import time
 
 class Worker(QRunnable):
     class Hooks(QObject):
-        finished = pyqtSignal(Any)
+        finished = pyqtSignal(object)
         progress = pyqtSignal(str)
 
     def __init__(self) -> None:
@@ -42,8 +42,10 @@ def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
         global _worker
 
-        _worker = Worker()
         action = menu.addAction(label)
+        
+        _worker = Worker()
+        _worker.hooks.finished.connect(lambda: showInfo(f"Generated successfully, Can be found at {SAVE_PATH}"))
         action.triggered.connect(lambda: _worker.thread(lambda progress:on_triggered(did, progress)))
         
     deck_browser_will_show_options_menu.append(wrapper)
