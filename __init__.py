@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 from aqt.gui_hooks import deck_browser_will_show_options_menu
 from aqt import QMenu, mw, QThreadPool, QRunnable, QObject, pyqtSignal
 from aqt.utils import tooltip, showInfo
