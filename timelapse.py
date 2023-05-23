@@ -26,7 +26,8 @@ def bar(
         bar_count = MAX_INTERVAL,
         x_scale = 1,
         get_data = lambda day: day.intervals,
-        show_burden = False
+        show_burden = False,
+        log=print
     ):
     deck = DeckManager(mw.col).get(did)
 
@@ -84,23 +85,24 @@ def bar(
         for bar, day, next_day in zip(bars, data, next_data):
             bar.set_height(lerp(day, next_day, sub_frame))
         
-        print(f"{frame=}/{frames}")
+        log(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
     anim.save(f"{title}_{did}.mp4")
     plt.show()
 
-def bar_interval(did):
-    bar(did) # If you want to change the settings do it here
+def bar_interval(did, progress):
+    bar(did, log=progress) # If you want to change the settings do it here
 
-def bar_ease(did):
+def bar_ease(did, progress):
     bar(did,
         title="ease", # Config
         shown_percentage=0.99,
         bar_count=MAX_EASE,
 
         x_scale=10, # Just needed for the bar
-        get_data=lambda day: day.real_ease
+        get_data=lambda day: day.real_ease,
+        log=progress
     )
 
 def pie(did,
@@ -117,6 +119,7 @@ def pie(did,
 
         days_per_second = 5,
         frames_per_day = 5,
+        log=print
     ):
     deck = DeckManager(mw.col).get(did)
     days = get_days(did)
@@ -145,18 +148,24 @@ def pie(did,
         axes.set_title(f"{deck['name']} {title.title()}")
         axes.set_xlabel(f"Total {label}: {sum(values):.0f}, {day.date}")
 
-        print(f"{frame=}/{frames}")
+        log(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
     anim.save(f"{title}_{did}.mp4")
 
-def pie_card_types(did):
-    pie(did)
+def pie_card_types(did, progress):
+    pie(did, log=progress)
 
-def pie_ratings(did): # This info is very easy to access in anki but I think 4 graphs look nicer than 3
+def pie_ratings(did, progress): # This info is very easy to access in anki but I think 4 graphs look nicer than 3
     pie(did, [
             lambda day: day.ratings[0],
             lambda day: day.ratings[1],
             lambda day: day.ratings[2],
             lambda day: day.ratings[3],
-        ], ["Again %d", "Hard %d", "Good %d", "Easy %d"], ["red", "orange", "greenyellow", "green"], "ratings", "reviews")
+        ], 
+        ["Again %d", "Hard %d", "Good %d", "Easy %d"],
+        ["red", "orange", "greenyellow", "green"],
+        title="ratings",
+        label="reviews",
+        log=progress
+        )
