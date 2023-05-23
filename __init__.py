@@ -24,16 +24,17 @@ class Worker(QRunnable):
         self.hooks.progress.connect(self.log)
 
     def run(self) -> None:
-        if not self.started:
-            self.started = True
-            result = self.func()
-            self.hooks.finished.emit(result)
+        """Do not call this function, use thread""" # Cant use underscores because its an inherited function
+        result = self.func()
+        self.hooks.finished.emit(result)
 
     hooks = Hooks()
 
     def thread(self, func: Callable):
-        self.func = lambda: func(self.hooks.progress.emit)
-        QThreadPool().globalInstance().start(_worker)
+        if not self.started:
+            self.started = True
+            self.func = lambda: func(self.hooks.progress.emit)
+            QThreadPool().globalInstance().start(_worker)
 
     last_log = time()
     def log(self, msg):
