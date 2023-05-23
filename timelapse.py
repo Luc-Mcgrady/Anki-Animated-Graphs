@@ -8,14 +8,22 @@ except ImportError:
     dependencies()
 
 from functools import cache
+from os.path import expanduser
+from os import makedirs
 
 from anki.decks import DeckManager
 from aqt import mw
 
 from .day_data import get_days, Day, IdHashedList, MAX_EASE, MAX_INTERVAL
 
-def lerp(a: int, b: int, t: float):
+def _lerp(a: int, b: int, t: float):
     return a + (b - a) * t
+
+def _save(anim : FuncAnimation, name: str):
+    dir_path = expanduser(f"~/animated anki graphs")
+    file_path = f"{dir_path}/{name}"
+    makedirs(dir_path, exist_ok=True)
+    anim.save(file_path)
 
 def bar(
         did,
@@ -62,7 +70,7 @@ def bar(
         for i, c in enumerate(intervals):
             count += c
             total += i * c
-        return total / count or 1
+        return total / (count or 1)
 
     @cache
     def burden(intervals: IdHashedList[int]):
@@ -77,20 +85,19 @@ def bar(
         next_data = get_data(days[day_index+1])
 
         axes.set_title(f"{deck['name']} {title.title()} {day.date}")
-        axes.set_xlim(-0.5, lerp(last_day(data), last_day(next_data), sub_frame) + 0.5)
-        axes.set_ylim(0, lerp(memo_max(data), memo_max(next_data), sub_frame))
+        axes.set_xlim(-0.5, _lerp(last_day(data), last_day(next_data), sub_frame) + 0.5)
+        axes.set_ylim(0, _lerp(memo_max(data), memo_max(next_data), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(data)}") 
         axes.set_xlabel(f"Average {title}: {x_scale*average(data):.2f}, "
                         f"Burden: {burden(data):.2f}cards/day" if show_burden else False)
 
         for bar, day, next_day in zip(bars, data, next_data):
-            bar.set_height(lerp(day, next_day, sub_frame))
+            bar.set_height(_lerp(day, next_day, sub_frame))
         
         log(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"{title}_{did}.mp4")
-    plt.show()
+    _save(anim, f"{title}_{did}.mp4")
 
 def bar_interval(did, progress):
     bar(did, log=progress) # If you want to change the settings do it here
@@ -138,7 +145,7 @@ def pie(did,
         next_day = days[day_index + 1]
 
         axes.clear()
-        values = [lerp(datum(day), datum(next_day), sub_frame) for datum in datums]
+        values = [_lerp(datum(day), datum(next_day), sub_frame) for datum in datums]
         values = [v if v > 0 else 0.1 for v in values] # Make sure no zero errors
 
         # print(values)
@@ -152,7 +159,7 @@ def pie(did,
         log(f"{frame=}/{frames}")
 
     anim = FuncAnimation(fig, animate, frames, interval=1000/(frames_per_day*days_per_second))
-    anim.save(f"{title}_{did}.mp4")
+    _save(anim, f"{title}_{did}.mp4")
 
 def pie_card_types(did, progress):
     pie(did, log=progress)
