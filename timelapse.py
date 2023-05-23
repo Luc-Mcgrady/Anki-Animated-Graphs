@@ -26,8 +26,8 @@ def bar(
         bar_count = MAX_INTERVAL,
         x_scale = 1,
         get_data = lambda day: day.intervals,
-        show_burden = False,
-        log=print
+        show_burden = True,
+        log = print
     ):
     deck = DeckManager(mw.col).get(did)
 
@@ -80,7 +80,8 @@ def bar(
         axes.set_xlim(-0.5, lerp(last_day(data), last_day(next_data), sub_frame) + 0.5)
         axes.set_ylim(0, lerp(memo_max(data), memo_max(next_data), sub_frame))
         axes.set_ylabel(f"Total cards: {sum(data)}") 
-        axes.set_xlabel(f"Average {title}: {x_scale*average(data):.2f}, Burden: {burden(data):.2f}cards/day") 
+        axes.set_xlabel(f"Average {title}: {x_scale*average(data):.2f}, "
+                        f"Burden: {burden(data):.2f}cards/day" if show_burden else False)
 
         for bar, day, next_day in zip(bars, data, next_data):
             bar.set_height(lerp(day, next_day, sub_frame))
