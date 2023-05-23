@@ -45,9 +45,10 @@ class Day:
         return self.intervals
 
 def get_days(did):
+    excluded = mw.col.find_cards(f"is:suspended")
+
     card_ids = mw.col.decks.cids(did, children=True)
-    suspended = mw.col.find_cards(f"is:suspended")
-    card_ids = [id for id in card_ids if id not in suspended]
+    card_ids = [id for id in card_ids if id not in excluded]
 
     day_seconds = 60 * 60 * 24
     cards = [mw.col.card_stats_data(card) for card in card_ids]
