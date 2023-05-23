@@ -6,6 +6,7 @@ from typing import Callable
 
 from .timelapse import bar_interval, bar_ease, pie_card_types, pie_ratings
 from .anki_install import dependencies
+from time import time
 
 class Worker(QRunnable):
     class Hooks(QObject):
@@ -27,16 +28,21 @@ class Worker(QRunnable):
         self.func = lambda: func(self.hooks.progress.emit)
         QThreadPool().globalInstance().start(_worker)
 
-    @staticmethod
-    def log(msg):
+    last_log = time()
+    def log(self, msg):
         print(msg)
-        tooltip(msg)
+        if time() - self.last_log >= 1:
+            tooltip(msg, 1000)
+            self.last_log = time()
 
 
-_worker = Worker()
+_worker = None
 
 def action(on_triggered: Callable, label:str):
     def wrapper(menu: QMenu, did):
+        global _worker
+
+        _worker = Worker()
         action = menu.addAction(label)
         action.triggered.connect(lambda: _worker.thread(lambda progress:on_triggered(did, progress)))
         
