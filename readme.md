@@ -57,6 +57,8 @@ If this doesn't work then my only guess is your pip is probably for a different 
 
 ## Windows
 
+Try and run anki in administrator mode if you get errors regarding permissions in folders.
+
 In windows it wont count if you install matplotlib in your python site-packages like if you did the linux way. Anki has its own python runtime and its own packages. Conveniently these packages are in the lib folder
 
 ```bat
