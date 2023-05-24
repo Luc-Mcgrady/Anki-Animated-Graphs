@@ -2,10 +2,11 @@ try:
     import matplotlib.pyplot as plt
     from matplotlib.figure import Figure
     from matplotlib.animation import FuncAnimation
-except ImportError:
+except ImportError as e:
     from .anki_install import dependencies
 
     dependencies()
+    raise e
 
 from functools import cache
 from os.path import expanduser
