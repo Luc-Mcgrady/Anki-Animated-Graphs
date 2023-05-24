@@ -15,7 +15,7 @@ f"""This will install {package_name} into anki
 You will need to install python or at least pip for this to work.
 You may also need to install git if the package requires it.
 
-It is recommended for you to run anki with command line (anki-console.bat on windows) as otherwise there is no progress bar.
+It is recommended for you to run anki in administrator mode or else this might not work.
 
 Proceed?""",
 title="Install package?")
@@ -36,7 +36,7 @@ title="Install package?")
             # I dont think anki itself supports any different operating systems so this should never be reached
             showCritical(f"Not supported for operating system: '{platform.system()}'") 
 
-        tooltip("Installing optimizer")
+        tooltip("Installing package {package_name}")
         def finished(exitCode,  exitStatus):
             if exitCode == 0:
                 showInfo(f"Package \"{package_name}\" installed successfully, restart for it to take effect")
