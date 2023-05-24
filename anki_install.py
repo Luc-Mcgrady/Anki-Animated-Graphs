@@ -29,7 +29,7 @@ title="Install package?")
             anki_lib_path = os.path.join(anki_lib_path, "lib") # .../anki/lib
 
             # https://stackoverflow.com/a/2916320
-            _pip_process.start("pip", ["install", f'--target={anki_lib_path}', package_name])
+            _pip_process.start("pip", ["install", f'--target={anki_lib_path}', package_name, "--no-user"])
         elif platform.system() == "Linux": # For linux
             _pip_process.start(sys.executable, ["-m", "pip", "install", package_name])
         else:
