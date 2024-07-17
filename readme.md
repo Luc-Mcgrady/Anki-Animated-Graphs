@@ -1,3 +1,11 @@
+# *** Please Use "[Search Stats Extended](https://ankiweb.net/shared/info/1613056169)" instead! ***
+Graphs from this addon are available in a much more accessable format in the stats menu.
+
+Github: https://github.com/Luc-Mcgrady/Anki-Search-Stats-Extended  
+Ankiweb: https://ankiweb.net/shared/info/1613056169
+
+------
+
 # Anki Animated Graphs
 
 [Video](http://www.youtube.com/watch?v=WDyhZYgIQk8)
